@@ -34,9 +34,22 @@ const Square = ({ children , isSelected, updateBoard, index }) => {
 
 
 function App() {
-  const [board, setBoard] = useState(Array(9).fill(null))
+  const [board, setBoard] = useState(() => {
+    const boardFromStorage = window.localStorage.getItem('board')
+    if(boardFromStorage) {
+      return JSON.parse(boardFromStorage)
+    }
+    return Array(9).fill(null)
+  }
+  ) 
 
-  const [turn, setTurn] = useState(TURNS.X)
+
+  const [turn, setTurn] = useState(() => {
+    const turnFromStorage = window.localStorage.getItem('turn')
+      return turnFromStorage ?? TURNS.X
+  }
+  )
+
   const [winner, setWinner] = useState(null)
 
   const checkWinner = (boardToCheck) => {
@@ -54,6 +67,8 @@ function App() {
     setBoard(Array(9).fill(null));
     setTurn(TURNS.X);
     setWinner(null);
+
+    window.localStorage.removeItem('board')
   };
 
   const checkEndGame = (newBoard) => {
@@ -72,6 +87,9 @@ function App() {
     const newTurn = turn === TURNS.X ? TURNS.O : TURNS.X
     setTurn(newTurn)
 
+    window.localStorage.setItem('board', JSON.stringify(newBoard))
+    window.localStorage.setItem('turn', newTurn)
+
     const newWinner = checkWinner(newBoard)
       if(newWinner) {
         confetti({
@@ -82,13 +100,12 @@ function App() {
           gravity: 0.6,
           scalar: 1.2,
         })
-        confetti()
         setWinner(newWinner)
-        
        } else if (checkEndGame(newBoard)) {
         setWinner(false)
        }
   }
+
     return (
     <main className='board'>
       <h1>3 en Raya</h1> 
